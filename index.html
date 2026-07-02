@@ -1,328 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Voxa — Voice Grammar Checker</title>
-<meta name="description" content="Speak or type, get instant AI-powered grammar correction, and hear it spoken back to you.">
-
-<!-- Fonts: Space Grotesk for display, Inter for body/UI -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-<!-- jsPDF for client-side PDF export (library, not a framework) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerbaGreen // AI Voice Grammar Checker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body data-theme="dark">
+<body>
 
-<!-- ===================== AMBIENT BACKGROUND ===================== -->
-<div class="bg-scene" aria-hidden="true">
-  <div class="bg-gradient"></div>
-  <div class="bg-grain"></div>
-  <div class="waveband">
-    <span></span><span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span><span></span>
-  </div>
-</div>
-
-<!-- ===================== SKIP LINK (a11y) ===================== -->
-<a class="skip-link" href="#main-content">Skip to main content</a>
-
-<!-- ===================== TOASTS ===================== -->
-<div id="toastRegion" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
-
-<!-- ===================== HEADER ===================== -->
-<header class="site-header">
-  <div class="brand">
-    <span class="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 48 48" width="30" height="30" fill="none">
-        <path d="M24 6a8 8 0 0 0-8 8v12a8 8 0 0 0 16 0V14a8 8 0 0 0-8-8Z" stroke="currentColor" stroke-width="2.4"/>
-        <path d="M12 24a12 12 0 0 0 24 0M24 36v6M18 42h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-      </svg>
-    </span>
-    <div class="brand-text">
-      <span class="brand-name">Voxa</span>
-      <span class="brand-tag">voice grammar studio</span>
-    </div>
-  </div>
-
-  <nav class="header-actions" aria-label="App controls">
-    <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Toggle light / dark mode">
-      <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke-linecap="round"/></svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z" stroke-linejoin="round"/></svg>
-    </button>
-    <button id="historyToggle" class="icon-btn" type="button" aria-label="Open history panel" aria-expanded="false" title="History">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7" stroke-linecap="round"/><path d="M3 4v5h5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <button id="settingsToggle" class="icon-btn" type="button" aria-label="Open settings" aria-haspopup="dialog" title="Settings">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V19.5a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H4.5a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H10a1.7 1.7 0 0 0 1-1.55V4.5a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V10a1.7 1.7 0 0 0 1.55 1h.19a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1Z"/></svg>
-    </button>
-  </nav>
-</header>
-
-<!-- ===================== MAIN ===================== -->
-<main id="main-content">
-
-  <section class="hero">
-    <p class="hero-eyebrow">speak &middot; correct &middot; hear it back</p>
-    <h1 class="hero-title">Say it rough. <span>Hear it right.</span></h1>
-    <p class="hero-sub">Voxa listens to your voice, tidies up the grammar with Groq's Llama&nbsp;3.3, and reads the polished version back to you.</p>
-  </section>
-
-  <div class="layout-grid">
-
-    <!-- ============ LEFT COLUMN: INPUT ============ -->
-    <section class="col col-input">
-
-      <!-- Mode switch -->
-      <div class="mode-switch glass" role="tablist" aria-label="Input mode">
-        <button class="mode-btn is-active" id="modeVoiceBtn" role="tab" aria-selected="true" aria-controls="voicePanel" type="button">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke-linecap="round"/></svg>
-          Voice
-        </button>
-        <button class="mode-btn" id="modeTextBtn" role="tab" aria-selected="false" aria-controls="textPanel" type="button">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h10M4 19h13" stroke-linecap="round"/></svg>
-          Type
-        </button>
-        <span class="mode-thumb" aria-hidden="true"></span>
-      </div>
-
-      <!-- Voice Panel -->
-      <div class="card glass voice-card" id="voicePanel" role="tabpanel" aria-labelledby="modeVoiceBtn">
-        <div class="mic-stage">
-          <button id="micBtn" class="mic-btn" type="button" aria-pressed="false" aria-label="Start recording your voice">
-            <span class="mic-rings" aria-hidden="true">
-              <i></i><i></i><i></i>
-            </span>
-            <span class="mic-core">
-              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke-linecap="round"/></svg>
-            </span>
-          </button>
-          <p class="mic-status" id="micStatus">Tap to start speaking</p>
-          <div class="mic-eq" id="micEq" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-          </div>
-        </div>
-
-        <div class="transcript-box">
-          <div class="transcript-head">
-            <span class="label-eyebrow">Live transcript</span>
-            <span class="pill pill-muted" id="langPill">EN</span>
-          </div>
-          <p id="liveTranscript" class="transcript-text" aria-live="polite">Your words will appear here as you speak…</p>
-        </div>
-
-        <div class="btn-row">
-          <button id="checkVoiceBtn" class="btn btn-primary" type="button" disabled>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Check Grammar
-          </button>
-          <button id="clearVoiceBtn" class="btn btn-ghost" type="button">Clear</button>
-        </div>
-      </div>
-
-      <!-- Text Panel -->
-      <div class="card glass text-card is-hidden" id="textPanel" role="tabpanel" aria-labelledby="modeTextBtn" hidden>
-        <label class="label-eyebrow" for="manualInput">Type or paste your text</label>
-        <textarea id="manualInput" class="manual-textarea" placeholder="e.g. me and him goes to the market yesterday for buy some fruits" aria-label="Text to grammar check"></textarea>
-        <div class="btn-row">
-          <button id="checkTextBtn" class="btn btn-primary" type="button">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Check Grammar
-          </button>
-          <button id="clearTextBtn" class="btn btn-ghost" type="button">Clear</button>
-        </div>
-      </div>
-
-      <!-- Statistics -->
-      <div class="card glass stats-card">
-        <span class="label-eyebrow">Statistics</span>
-        <div class="stats-grid">
-          <div class="stat"><span class="stat-value" id="statWords">0</span><span class="stat-label">Words</span></div>
-          <div class="stat"><span class="stat-value" id="statChars">0</span><span class="stat-label">Characters</span></div>
-          <div class="stat"><span class="stat-value" id="statReadTime">0s</span><span class="stat-label">Reading time</span></div>
-          <div class="stat"><span class="stat-value" id="statSpeakTime">0s</span><span class="stat-label">Speaking time</span></div>
-          <div class="stat"><span class="stat-value" id="statCorrections">0</span><span class="stat-label">Corrections made</span></div>
-          <div class="stat"><span class="stat-value" id="statTotalChecks">0</span><span class="stat-label">Total checks</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ RIGHT COLUMN: RESULT ============ -->
-    <section class="col col-result">
-
-      <div class="card glass result-card" id="resultCard">
-
-        <!-- Empty state -->
-        <div class="empty-state" id="resultEmpty">
-          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 16.5h5" stroke-linecap="round"/></svg>
-          <p>Your corrected text will appear here — speak or type, then hit “Check Grammar.”</p>
-        </div>
-
-        <!-- Loading state -->
-        <div class="loading-state is-hidden" id="resultLoading" hidden>
-          <div class="pulse-orb" aria-hidden="true"></div>
-          <p class="typing-line"><span id="typingText">Reading your sentence</span><span class="typing-dots"><i></i><i></i><i></i></span></p>
-        </div>
-
-        <!-- Result content -->
-        <div class="result-content is-hidden" id="resultContent" hidden>
-
-          <div class="result-block">
-            <div class="result-block-head">
-              <span class="label-eyebrow">Original</span>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Verba<span class="accent-text">Green</span></span>
             </div>
-            <p class="result-text original-text" id="originalOut"></p>
-          </div>
-
-          <div class="result-block result-block-corrected">
-            <div class="result-block-head">
-              <span class="label-eyebrow">Corrected <span class="pill pill-good" id="correctionCountPill">0 fixes</span></span>
+            <div class="nav-actions">
+                <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button id="open-settings" class="btn btn-secondary">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </button>
             </div>
-            <p class="result-text corrected-text" id="correctedOut"></p>
-          </div>
-
-          <!-- Speech playback controls -->
-          <div class="playback-panel">
-            <div class="playback-buttons">
-              <button id="playBtn" class="btn btn-primary btn-round" type="button" aria-label="Play corrected text">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>
-              </button>
-              <button id="pauseBtn" class="btn btn-ghost btn-round" type="button" aria-label="Pause speech" disabled>
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-              </button>
-              <button id="resumeBtn" class="btn btn-ghost btn-round" type="button" aria-label="Resume speech" disabled>
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>
-              </button>
-              <button id="stopBtn" class="btn btn-ghost btn-round" type="button" aria-label="Stop speech" disabled>
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-              </button>
-              <span class="speak-status" id="speakStatus">Idle</span>
-            </div>
-
-            <div class="voice-settings">
-              <div class="field">
-                <label for="voiceSelect">Voice</label>
-                <select id="voiceSelect" aria-label="Choose a voice"></select>
-              </div>
-              <div class="field">
-                <label for="rateSlider">Rate <output id="rateOut">1</output></label>
-                <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1">
-              </div>
-              <div class="field">
-                <label for="pitchSlider">Pitch <output id="pitchOut">1</output></label>
-                <input type="range" id="pitchSlider" min="0" max="2" step="0.1" value="1">
-              </div>
-              <div class="field">
-                <label for="volumeSlider">Volume <output id="volumeOut">1</output></label>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
-              </div>
-            </div>
-          </div>
-
-          <!-- Export row -->
-          <div class="btn-row export-row">
-            <button id="copyBtn" class="btn btn-ghost" type="button">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-              Copy
-            </button>
-            <button id="downloadTxtBtn" class="btn btn-ghost" type="button">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19.5h16" stroke-linecap="round"/></svg>
-              .TXT
-            </button>
-            <button id="downloadPdfBtn" class="btn btn-ghost" type="button">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19.5h16" stroke-linecap="round"/></svg>
-              .PDF
-            </button>
-            <button id="shareBtn" class="btn btn-ghost" type="button" hidden>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.6 7.6-4.2M8.2 13.4l7.6 4.2"/></svg>
-              Share
-            </button>
-          </div>
         </div>
+    </nav>
 
-        <!-- Error state -->
-        <div class="error-state is-hidden" id="resultError" hidden role="alert">
-          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
-          <p id="resultErrorText">Something went wrong.</p>
-          <button id="resultErrorRetry" class="btn btn-primary" type="button">Try again</button>
+    <main class="main-container">
+        <div class="grid-layout">
+            
+            <section class="workspace-panel">
+                <div class="card main-card">
+                    
+                    <div class="recording-section">
+                        <div class="mic-container">
+                            <button id="mic-btn" class="mic-button" title="Start Recording">
+                                <i class="fa-solid fa-microphone"></i>
+                            </button>
+                            <div class="pulse-ring"></div>
+                        </div>
+                        <p id="recording-status" class="status-text">Click the microphone to start speaking</p>
+                        <div id="live-transcript" class="live-transcript hidden">Listening...</div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="text-block">
+                        <div class="block-header">
+                            <label for="original-text"><i class="fa-solid fa-comment-dots"></i> Original Speech</label>
+                            <div class="metrics" id="original-metrics">
+                                <span>Chars: <b class="count">0</b></span> | 
+                                <span>Words: <b class="count">0</b></span>
+                            </div>
+                        </div>
+                        <textarea id="original-text" placeholder="Your speech transcript will appear here automatically, or you can type directly..."></textarea>
+                        
+                        <div class="action-row">
+                            <button id="clear-original" class="btn btn-subtle"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                            <button id="correct-btn" class="btn btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Correct Grammar</button>
+                        </div>
+                    </div>
+
+                    <div id="ai-loading" class="ai-loading hidden">
+                        <div class="sparkles">
+                            <i class="fa-solid fa-sparkles class-1"></i>
+                            <i class="fa-solid fa-sparkles class-2"></i>
+                            <i class="fa-solid fa-sparkles class-3"></i>
+                        </div>
+                        <div class="loading-bar"><div></div></div>
+                        <p>Analyzing morphology and syntactical structure...</p>
+                    </div>
+
+                    <div id="corrected-section" class="text-block hidden">
+                        <hr class="divider">
+                        <div class="block-header">
+                            <label for="corrected-text"><i class="fa-solid fa-square-check"></i> Corrected Text</label>
+                            <div class="metrics" id="corrected-metrics">
+                                <span>Chars: <b class="count">0</b></span> | 
+                                <span>Words: <b class="count">0</b></span> | 
+                                <span>Read: <b class="count">0s</b></span> | 
+                                <span>Speak: <b class="count">0s</b></span>
+                            </div>
+                        </div>
+                        <textarea id="corrected-text" placeholder="AI-corrected text layout..."></textarea>
+
+                        <div class="tts-config-bar">
+                            <div class="config-group">
+                                <label><i class="fa-solid fa-headset"></i> Voice:</label>
+                                <select id="voice-select" class="form-control"></select>
+                            </div>
+                            <div class="config-sliders">
+                                <div class="slider-item">
+                                    <label>Vol: <span id="vol-val">1</span></label>
+                                    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1">
+                                </div>
+                                <div class="slider-item">
+                                    <label>Rate: <span id="rate-val">1</span>x</label>
+                                    <input type="range" id="rate-slider" min="0.5" max="2" step="0.1" value="1">
+                                </div>
+                                <div class="slider-item">
+                                    <label>Pitch: <span id="pitch-val">1</span></label>
+                                    <input type="range" id="pitch-slider" min="0.5" max="1.5" step="0.1" value="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="button-matrix">
+                            <div class="speech-controls">
+                                <button id="speak-btn" class="btn btn-success" title="Speak Aloud"><i class="fa-solid fa-play"></i> Speak</button>
+                                <button id="pause-btn" class="btn btn-warning" title="Pause Speech" disabled><i class="fa-solid fa-pause"></i> Pause</button>
+                                <button id="resume-btn" class="btn btn-success" title="Resume Speech" disabled><i class="fa-solid fa-forward"></i> Resume</button>
+                                <button id="stop-btn" class="btn btn-danger" title="Stop Speech" disabled><i class="fa-solid fa-stop"></i> Stop</button>
+                            </div>
+                            <div class="utility-controls">
+                                <button id="copy-btn" class="btn btn-secondary" title="Copy to Clipboard"><i class="fa-solid fa-copy"></i> Copy</button>
+                                <button id="download-txt" class="btn btn-secondary" title="Download Text File"><i class="fa-solid fa-file-lines"></i> TXT</button>
+                                <button id="download-pdf" class="btn btn-secondary" title="Download PDF Report"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                                <button id="clear-all" class="btn btn-danger-subtle" title="Clear Canvas"><i class="fa-solid fa-broom"></i> Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="history-panel">
+                <div class="card history-card">
+                    <div class="history-header">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Session History</h3>
+                        <button id="clear-history" class="btn btn-subtle-danger btn-sm">Clear All</button>
+                    </div>
+                    <div id="history-list" class="history-list">
+                        <div class="empty-history-state">No recorded events yet.</div>
+                    </div>
+                </div>
+            </section>
         </div>
-      </div>
-    </section>
-  </div>
+    </main>
 
-  <!-- ============ HISTORY PANEL ============ -->
-  <aside class="history-panel" id="historyPanel" aria-label="Grammar check history" aria-hidden="true">
-    <div class="history-panel-head">
-      <h2>History</h2>
-      <div class="history-head-actions">
-        <button id="clearHistoryBtn" class="btn btn-ghost btn-sm" type="button">Clear all</button>
-        <button id="closeHistoryBtn" class="icon-btn" type="button" aria-label="Close history panel">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="history-list" id="historyList">
-      <p class="history-empty" id="historyEmpty">No checks yet. Your history will show up here.</p>
-    </div>
-  </aside>
-  <div class="scrim" id="historyScrim" hidden></div>
-
-</main>
-
-<!-- ===================== SETTINGS MODAL ===================== -->
-<div class="modal-scrim" id="settingsScrim" hidden></div>
-<div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
-  <div class="modal-head">
-    <h2 id="settingsTitle">AI Settings</h2>
-    <button id="closeSettingsBtn" class="icon-btn" type="button" aria-label="Close settings">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
-    </button>
-  </div>
-
-  <div class="modal-body">
-    <p class="modal-hint">Voxa calls the Groq API directly from your browser. Your key is stored only in this browser's <code>localStorage</code> — it is never sent anywhere except <code>api.groq.com</code>.</p>
-
-    <div class="field">
-      <label for="apiKeyInput">Groq API Key</label>
-      <div class="key-input-row">
-        <input type="password" id="apiKeyInput" placeholder="gsk_••••••••••••••••••••••••" autocomplete="off" spellcheck="false">
-        <button id="toggleKeyVisibility" type="button" class="icon-btn" aria-label="Show API key">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7-10.5-7-10.5-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-body glassmorphism">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders"></i> Engine Settings</h3>
+                <button id="close-settings" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="form-group">
+                    <label for="api-key-input">Groq API Cloud Key</label>
+                    <div class="input-password-wrapper">
+                        <input type="password" id="api-key-input" placeholder="gsk_yX92...">
+                        <button id="toggle-key-visibility" class="visibility-btn"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                    <p class="input-hint">Your API key is saved locally in your browser sandbox.</p>
+                </div>
+                <div class="status-display-row">
+                    <span>API Handshake Status:</span>
+                    <span id="api-status" class="badge badge-error">Unconfigured</span>
+                </div>
+                <div class="modal-actions">
+                    <button id="delete-key-btn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete Key</button>
+                    <div class="right-actions">
+                        <button id="test-key-btn" class="btn btn-secondary"><i class="fa-solid fa-vial"></i> Test</button>
+                        <button id="save-key-btn" class="btn btn-success"><i class="fa-solid fa-floppy-disk"></i> Save Configurations</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="connection-status" id="connectionStatus">
-      <span class="status-dot" id="statusDot"></span>
-      <span id="statusText">Not connected</span>
-    </div>
-
-    <div class="btn-row">
-      <button id="saveKeyBtn" class="btn btn-primary" type="button">Save key</button>
-      <button id="testKeyBtn" class="btn btn-ghost" type="button">Test connection</button>
-      <button id="removeKeyBtn" class="btn btn-danger" type="button">Remove key</button>
-    </div>
-
-    <hr class="modal-divider">
-
-    <div class="field">
-      <label for="modelDisplay">Model</label>
-      <input type="text" id="modelDisplay" value="llama-3.3-70b-versatile" disabled>
-    </div>
-
-    <p class="modal-hint">
-      Need a key? Create one for free at
-      <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">console.groq.com/keys</a>.
-    </p>
-  </div>
-</div>
-
-<script src="script.js" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>
