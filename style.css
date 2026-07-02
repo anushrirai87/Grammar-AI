@@ -165,7 +165,7 @@ body {
 .icon-btn:hover { background: var(--mint); color: var(--dark-green); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-/* --- Recording Hub --- */
+/* --- Recording Hub (Blue Theme Variant) --- */
 .recording-section {
     display: flex;
     flex-direction: column;
@@ -180,7 +180,7 @@ body {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135s, var(--emerald), var(--dark-green));
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     border: none;
     color: white;
     font-size: 1.8rem;
@@ -188,7 +188,7 @@ body {
     z-index: 2;
     position: relative;
     transition: var(--transition-fast);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
 }
 .mic-button.recording {
     background: var(--danger);
@@ -198,7 +198,7 @@ body {
 .pulse-ring {
     position: absolute;
     top: -10px; left: -10px; right: -10px; bottom: -10px;
-    border: 2px solid var(--emerald);
+    border: 2px solid #2563eb;
     border-radius: 50%;
     opacity: 0;
     transition: var(--transition-fast);
