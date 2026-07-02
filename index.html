@@ -2,681 +2,327 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Speak · Check · Polish — Voice to Text Grammar Checker</title>
-<style>
-  :root{
-    --bg: #14171C;
-    --surface: #1B1F26;
-    --surface-2: #22272F;
-    --line: #2E3440;
-    --ink: #E8E6E1;
-    --ink-dim: #9BA1AB;
-    --amber: #E8A33D;
-    --amber-dim: #7A5A26;
-    --teal: #4FB0A5;
-    --red: #D96C6C;
-    --mono: 'IBM Plex Mono', 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
-  }
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Voxa — Voice Grammar Checker</title>
+<meta name="description" content="Speak or type, get instant AI-powered grammar correction, and hear it spoken back to you.">
 
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--bg);
-    color:var(--ink);
-    font-family:var(--sans);
-    min-height:100vh;
-    line-height:1.5;
-  }
-  ::selection{ background:var(--amber-dim); color:var(--ink); }
+<!-- Fonts: Space Grotesk for display, Inter for body/UI -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  a{color:var(--amber);}
+<!-- jsPDF for client-side PDF export (library, not a framework) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
-  /* ---------- Layout shell ---------- */
-  .wrap{
-    max-width:1120px;
-    margin:0 auto;
-    padding:48px 24px 80px;
-  }
-
-  /* ---------- Hero ---------- */
-  .hero{
-    text-align:center;
-    padding-bottom:40px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:36px;
-  }
-  .eyebrow{
-    font-family:var(--mono);
-    font-size:12px;
-    letter-spacing:0.18em;
-    text-transform:uppercase;
-    color:var(--ink-dim);
-    margin-bottom:14px;
-  }
-  .eyebrow span{ color:var(--amber); }
-  h1{
-    font-family:var(--mono);
-    font-weight:700;
-    font-size:clamp(32px, 5vw, 56px);
-    margin:0 0 12px;
-    letter-spacing:-0.01em;
-  }
-  h1 .accent{ color:var(--amber); }
-  .sub{
-    color:var(--ink-dim);
-    font-size:16px;
-    max-width:520px;
-    margin:0 auto 36px;
-  }
-
-  /* Mic control */
-  .mic-stage{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:18px;
-  }
-  .mic-btn{
-    position:relative;
-    width:96px;
-    height:96px;
-    border-radius:50%;
-    border:2px solid var(--amber);
-    background:radial-gradient(circle at 30% 30%, #2a2118, var(--surface));
-    color:var(--amber);
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:transform .15s ease, box-shadow .25s ease, border-color .25s ease;
-    box-shadow:0 0 0 0 rgba(232,163,61,0.0);
-  }
-  .mic-btn:hover{ transform:scale(1.04); }
-  .mic-btn:active{ transform:scale(0.97); }
-  .mic-btn svg{ width:34px; height:34px; }
-  .mic-btn.listening{
-    border-color:var(--red);
-    color:var(--red);
-    animation:pulse-ring 1.6s ease-out infinite;
-  }
-  @keyframes pulse-ring{
-    0%{ box-shadow:0 0 0 0 rgba(217,108,108,0.45); }
-    70%{ box-shadow:0 0 0 22px rgba(217,108,108,0); }
-    100%{ box-shadow:0 0 0 0 rgba(217,108,108,0); }
-  }
-
-  .waveform{
-    display:flex;
-    align-items:flex-end;
-    gap:4px;
-    height:34px;
-  }
-  .waveform .bar{
-    width:4px;
-    border-radius:2px;
-    background:var(--amber-dim);
-    height:6px;
-    transition:background .3s ease;
-  }
-  .waveform.active .bar{ background:var(--amber); animation:bar-bounce 1s ease-in-out infinite; }
-  .waveform .bar:nth-child(1){ animation-delay: 0s; }
-  .waveform .bar:nth-child(2){ animation-delay: .1s; }
-  .waveform .bar:nth-child(3){ animation-delay: .2s; }
-  .waveform .bar:nth-child(4){ animation-delay: .3s; }
-  .waveform .bar:nth-child(5){ animation-delay: .15s; }
-  .waveform .bar:nth-child(6){ animation-delay: .25s; }
-  .waveform .bar:nth-child(7){ animation-delay: .05s; }
-  .waveform .bar:nth-child(8){ animation-delay: .35s; }
-  .waveform .bar:nth-child(9){ animation-delay: .2s; }
-  .waveform .bar:nth-child(10){ animation-delay: .1s; }
-  .waveform .bar:nth-child(11){ animation-delay: .3s; }
-  .waveform .bar:nth-child(12){ animation-delay: 0s; }
-  @keyframes bar-bounce{
-    0%,100%{ height:6px; }
-    50%{ height:30px; }
-  }
-
-  .status-line{
-    font-family:var(--mono);
-    font-size:13px;
-    color:var(--ink-dim);
-    min-height:18px;
-  }
-  .status-line.live{ color:var(--red); }
-
-  /* ---------- Key panel ---------- */
-  .key-panel{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:16px 18px;
-    margin-bottom:32px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-  }
-  .key-panel label{
-    font-family:var(--mono);
-    font-size:12px;
-    color:var(--ink-dim);
-    text-transform:uppercase;
-    letter-spacing:0.08em;
-    white-space:nowrap;
-  }
-  .key-panel input[type="password"], .key-panel input[type="text"]{
-    flex:1;
-    min-width:220px;
-    background:var(--surface-2);
-    border:1px solid var(--line);
-    color:var(--ink);
-    padding:9px 12px;
-    border-radius:6px;
-    font-family:var(--mono);
-    font-size:13px;
-  }
-  .key-panel input:focus{ outline:2px solid var(--amber); outline-offset:1px; border-color:var(--amber); }
-  .key-toggle{
-    background:none;
-    border:1px solid var(--line);
-    color:var(--ink-dim);
-    font-family:var(--mono);
-    font-size:12px;
-    padding:8px 10px;
-    border-radius:6px;
-    cursor:pointer;
-  }
-  .key-toggle:hover{ color:var(--ink); border-color:var(--ink-dim); }
-  .key-note{
-    width:100%;
-    font-size:12px;
-    color:var(--ink-dim);
-  }
-
-  /* ---------- Panels grid ---------- */
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:24px;
-  }
-  @media (max-width:820px){
-    .grid{ grid-template-columns:1fr; }
-  }
-
-  .panel{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:12px;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-  }
-  .panel-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 18px;
-    border-bottom:1px solid var(--line);
-  }
-  .panel-head .label{
-    font-family:var(--mono);
-    font-size:12px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--ink-dim);
-  }
-  .panel-head .num{ color:var(--amber); margin-right:6px; }
-  .panel-actions{ display:flex; gap:8px; }
-  .icon-btn{
-    background:none;
-    border:1px solid var(--line);
-    color:var(--ink-dim);
-    font-family:var(--mono);
-    font-size:11px;
-    padding:6px 10px;
-    border-radius:6px;
-    cursor:pointer;
-    transition:color .15s ease, border-color .15s ease;
-  }
-  .icon-btn:hover{ color:var(--ink); border-color:var(--ink-dim); }
-  .icon-btn:disabled{ opacity:0.4; cursor:not-allowed; }
-
-  textarea#transcript{
-    flex:1;
-    min-height:280px;
-    resize:vertical;
-    background:transparent;
-    border:none;
-    color:var(--ink);
-    font-family:var(--sans);
-    font-size:15px;
-    line-height:1.7;
-    padding:18px;
-  }
-  textarea#transcript:focus{ outline:none; }
-  textarea#transcript::placeholder{ color:var(--ink-dim); }
-
-  .output-body{
-    flex:1;
-    min-height:280px;
-    padding:18px;
-    font-size:15px;
-    line-height:1.8;
-    overflow-y:auto;
-  }
-  .output-body.empty{ color:var(--ink-dim); font-family:var(--mono); font-size:13px; }
-
-  .corrected-text del{
-    color:var(--red);
-    text-decoration:line-through;
-    text-decoration-thickness:1.5px;
-    background:rgba(217,108,108,0.12);
-    padding:1px 3px;
-    border-radius:3px;
-    margin:0 1px;
-  }
-  .corrected-text ins{
-    color:var(--teal);
-    text-decoration:none;
-    background:rgba(79,176,165,0.14);
-    padding:1px 3px;
-    border-radius:3px;
-    margin:0 1px;
-  }
-
-  .issue-list{
-    list-style:none;
-    margin:18px 0 0;
-    padding:0;
-    border-top:1px dashed var(--line);
-    padding-top:14px;
-  }
-  .issue-list li{
-    display:flex;
-    gap:10px;
-    padding:10px 0;
-    border-bottom:1px solid var(--line);
-    font-size:13px;
-  }
-  .issue-list li:last-child{ border-bottom:none; }
-  .issue-mark{
-    font-family:var(--mono);
-    color:var(--amber);
-    flex-shrink:0;
-  }
-  .issue-body del{ color:var(--red); text-decoration:line-through; background:none; padding:0; }
-  .issue-body ins{ color:var(--teal); text-decoration:none; background:none; padding:0; }
-  .issue-explain{ color:var(--ink-dim); display:block; margin-top:2px; }
-
-  .check-row{
-    display:flex;
-    justify-content:center;
-    margin:28px 0;
-  }
-  .check-btn{
-    font-family:var(--mono);
-    font-size:14px;
-    letter-spacing:0.04em;
-    background:var(--amber);
-    color:#1B1408;
-    border:none;
-    padding:14px 28px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:600;
-    transition:transform .12s ease, background .2s ease;
-  }
-  .check-btn:hover{ transform:translateY(-1px); background:#f0b357; }
-  .check-btn:disabled{ background:var(--surface-2); color:var(--ink-dim); cursor:not-allowed; transform:none; }
-
-  .error-banner{
-    background:rgba(217,108,108,0.1);
-    border:1px solid var(--red);
-    color:var(--red);
-    font-family:var(--mono);
-    font-size:13px;
-    padding:12px 16px;
-    border-radius:8px;
-    margin:0 0 20px;
-    display:none;
-  }
-  .error-banner.show{ display:block; }
-
-  footer{
-    margin-top:56px;
-    padding-top:24px;
-    border-top:1px solid var(--line);
-    text-align:center;
-    color:var(--ink-dim);
-    font-family:var(--mono);
-    font-size:12px;
-  }
-  footer a{ color:var(--ink-dim); text-decoration:underline; }
-  footer a:hover{ color:var(--amber); }
-
-  @media (prefers-reduced-motion: reduce){
-    .mic-btn.listening{ animation:none; }
-    .waveform.active .bar{ animation:none; height:18px; }
-  }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="wrap">
+<body data-theme="dark">
 
-  <div class="hero">
-    <div class="eyebrow">Voice <span>→</span> Text <span>→</span> Polished</div>
-    <h1>Speak it. <span class="accent">Fix</span> it.</h1>
-    <p class="sub">Dictate straight into the browser, then hand the transcript to Groq for a grammar pass — red pen in, clean copy out.</p>
-
-    <div class="mic-stage">
-      <button class="mic-btn" id="micBtn" aria-label="Start recording" title="Start recording">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" id="micIcon">
-          <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z"/>
-          <path d="M19 11a7 7 0 0 1-14 0"/>
-          <line x1="12" y1="18" x2="12" y2="22"/>
-          <line x1="9" y1="22" x2="15" y2="22"/>
-        </svg>
-      </button>
-      <div class="waveform" id="waveform">
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-      </div>
-      <div class="status-line" id="statusLine">Tap the mic to start dictating</div>
-    </div>
+<!-- ===================== AMBIENT BACKGROUND ===================== -->
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-gradient"></div>
+  <div class="bg-grain"></div>
+  <div class="waveband">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
   </div>
-
-  <div class="key-panel">
-    <label for="apiKey">Groq API key</label>
-    <input type="password" id="apiKey" placeholder="gsk_..." autocomplete="off" spellcheck="false">
-    <button class="key-toggle" id="toggleKeyVisibility">show</button>
-    <span class="key-note">Stays in this browser tab only — sent directly to Groq, never stored or logged. Get a free key at <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>.</span>
-  </div>
-
-  <div class="error-banner" id="errorBanner"></div>
-
-  <div class="grid">
-    <div class="panel">
-      <div class="panel-head">
-        <div class="label"><span class="num">01</span>Transcript</div>
-        <div class="panel-actions">
-          <button class="icon-btn" id="clearBtn">clear</button>
-        </div>
-      </div>
-      <textarea id="transcript" placeholder="Your spoken words will appear here. You can also type or edit directly."></textarea>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head">
-        <div class="label"><span class="num">02</span>Corrected</div>
-        <div class="panel-actions">
-          <button class="icon-btn" id="copyBtn" disabled>copy</button>
-        </div>
-      </div>
-      <div class="output-body empty" id="outputBody">Run a grammar check to see the cleaned-up version and a list of fixes here.</div>
-    </div>
-  </div>
-
-  <div class="check-row">
-    <button class="check-btn" id="checkBtn">Check grammar with Groq</button>
-  </div>
-
-  <footer>
-    Voice capture uses the browser's Web Speech API (Chrome / Edge recommended). Grammar checking calls Groq's chat completions API from your browser using the key above.
-  </footer>
 </div>
 
-<script>
-(function(){
-  const micBtn = document.getElementById('micBtn');
-  const waveform = document.getElementById('waveform');
-  const statusLine = document.getElementById('statusLine');
-  const transcriptEl = document.getElementById('transcript');
-  const clearBtn = document.getElementById('clearBtn');
-  const checkBtn = document.getElementById('checkBtn');
-  const outputBody = document.getElementById('outputBody');
-  const copyBtn = document.getElementById('copyBtn');
-  const apiKeyInput = document.getElementById('apiKey');
-  const toggleKeyVisibility = document.getElementById('toggleKeyVisibility');
-  const errorBanner = document.getElementById('errorBanner');
+<!-- ===================== SKIP LINK (a11y) ===================== -->
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
-  let lastCorrectedText = '';
+<!-- ===================== TOASTS ===================== -->
+<div id="toastRegion" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  // ---------- API key show/hide ----------
-  toggleKeyVisibility.addEventListener('click', () => {
-    const isPwd = apiKeyInput.type === 'password';
-    apiKeyInput.type = isPwd ? 'text' : 'password';
-    toggleKeyVisibility.textContent = isPwd ? 'hide' : 'show';
-  });
+<!-- ===================== HEADER ===================== -->
+<header class="site-header">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="30" height="30" fill="none">
+        <path d="M24 6a8 8 0 0 0-8 8v12a8 8 0 0 0 16 0V14a8 8 0 0 0-8-8Z" stroke="currentColor" stroke-width="2.4"/>
+        <path d="M12 24a12 12 0 0 0 24 0M24 36v6M18 42h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <div class="brand-text">
+      <span class="brand-name">Voxa</span>
+      <span class="brand-tag">voice grammar studio</span>
+    </div>
+  </div>
 
-  // ---------- Error banner ----------
-  function showError(msg){
-    errorBanner.textContent = msg;
-    errorBanner.classList.add('show');
-  }
-  function clearError(){
-    errorBanner.classList.remove('show');
-    errorBanner.textContent = '';
-  }
+  <nav class="header-actions" aria-label="App controls">
+    <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Toggle light / dark mode">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke-linecap="round"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="historyToggle" class="icon-btn" type="button" aria-label="Open history panel" aria-expanded="false" title="History">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7" stroke-linecap="round"/><path d="M3 4v5h5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="settingsToggle" class="icon-btn" type="button" aria-label="Open settings" aria-haspopup="dialog" title="Settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V19.5a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H4.5a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H10a1.7 1.7 0 0 0 1-1.55V4.5a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V10a1.7 1.7 0 0 0 1.55 1h.19a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1Z"/></svg>
+    </button>
+  </nav>
+</header>
 
-  // ---------- Speech recognition ----------
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
-  let listening = false;
-  let baseText = '';
+<!-- ===================== MAIN ===================== -->
+<main id="main-content">
 
-  if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+  <section class="hero">
+    <p class="hero-eyebrow">speak &middot; correct &middot; hear it back</p>
+    <h1 class="hero-title">Say it rough. <span>Hear it right.</span></h1>
+    <p class="hero-sub">Voxa listens to your voice, tidies up the grammar with Groq's Llama&nbsp;3.3, and reads the polished version back to you.</p>
+  </section>
 
-    recognition.onresult = (event) => {
-      let interim = '';
-      let finalChunk = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const t = event.results[i][0].transcript;
-        if (event.results[i].isFinal) finalChunk += t + ' ';
-        else interim += t;
-      }
-      if (finalChunk) baseText += finalChunk;
-      transcriptEl.value = (baseText + interim).trim();
-    };
+  <div class="layout-grid">
 
-    recognition.onerror = (event) => {
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        showError('Microphone access was blocked. Allow mic permissions for this page and try again.');
-      } else if (event.error !== 'no-speech') {
-        showError('Speech recognition error: ' + event.error);
-      }
-    };
+    <!-- ============ LEFT COLUMN: INPUT ============ -->
+    <section class="col col-input">
 
-    recognition.onend = () => {
-      if (listening) {
-        // restart automatically unless the user explicitly stopped it
-        try { recognition.start(); } catch (e) {}
-      }
-    };
-  } else {
-    statusLine.textContent = 'Speech recognition is not supported in this browser — try Chrome or Edge.';
-    micBtn.disabled = true;
-    micBtn.style.opacity = '0.4';
-    micBtn.style.cursor = 'not-allowed';
-  }
+      <!-- Mode switch -->
+      <div class="mode-switch glass" role="tablist" aria-label="Input mode">
+        <button class="mode-btn is-active" id="modeVoiceBtn" role="tab" aria-selected="true" aria-controls="voicePanel" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke-linecap="round"/></svg>
+          Voice
+        </button>
+        <button class="mode-btn" id="modeTextBtn" role="tab" aria-selected="false" aria-controls="textPanel" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h10M4 19h13" stroke-linecap="round"/></svg>
+          Type
+        </button>
+        <span class="mode-thumb" aria-hidden="true"></span>
+      </div>
 
-  function startListening(){
-    if (!recognition) return;
-    clearError();
-    baseText = transcriptEl.value ? transcriptEl.value.trim() + ' ' : '';
-    listening = true;
-    try { recognition.start(); } catch(e) {}
-    micBtn.classList.add('listening');
-    waveform.classList.add('active');
-    statusLine.textContent = 'Listening…';
-    statusLine.classList.add('live');
-    micBtn.setAttribute('aria-label', 'Stop recording');
-  }
-
-  function stopListening(){
-    if (!recognition) return;
-    listening = false;
-    recognition.stop();
-    micBtn.classList.remove('listening');
-    waveform.classList.remove('active');
-    statusLine.textContent = 'Tap the mic to start dictating';
-    statusLine.classList.remove('live');
-    micBtn.setAttribute('aria-label', 'Start recording');
-  }
-
-  micBtn.addEventListener('click', () => {
-    if (listening) stopListening();
-    else startListening();
-  });
-
-  clearBtn.addEventListener('click', () => {
-    transcriptEl.value = '';
-    baseText = '';
-    outputBody.innerHTML = 'Run a grammar check to see the cleaned-up version and a list of fixes here.';
-    outputBody.classList.add('empty');
-    copyBtn.disabled = true;
-    clearError();
-  });
-
-  // ---------- Diff helper (word-level, simple LCS) ----------
-  function wordDiff(a, b){
-    const aw = a.split(/(\s+)/);
-    const bw = b.split(/(\s+)/);
-    const n = aw.length, m = bw.length;
-    const dp = Array.from({length:n+1}, () => new Array(m+1).fill(0));
-    for (let i=n-1;i>=0;i--){
-      for (let j=m-1;j>=0;j--){
-        dp[i][j] = aw[i] === bw[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j], dp[i][j+1]);
-      }
-    }
-    let i=0, j=0;
-    let html = '';
-    while (i<n && j<m){
-      if (aw[i] === bw[j]){
-        html += escapeHtml(aw[i]);
-        i++; j++;
-      } else if (dp[i+1][j] >= dp[i][j+1]){
-        html += `<del>${escapeHtml(aw[i])}</del>`;
-        i++;
-      } else {
-        html += `<ins>${escapeHtml(bw[j])}</ins>`;
-        j++;
-      }
-    }
-    while (i<n){ html += `<del>${escapeHtml(aw[i])}</del>`; i++; }
-    while (j<m){ html += `<ins>${escapeHtml(bw[j])}</ins>`; j++; }
-    return html;
-  }
-
-  function escapeHtml(s){
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  // ---------- Groq grammar check ----------
-  checkBtn.addEventListener('click', async () => {
-    clearError();
-    const text = transcriptEl.value.trim();
-    const apiKey = apiKeyInput.value.trim();
-
-    if (!text) { showError('Type or dictate something first.'); return; }
-    if (!apiKey) { showError('Add your Groq API key above to run a grammar check.'); return; }
-
-    checkBtn.disabled = true;
-    checkBtn.textContent = 'Checking…';
-    outputBody.classList.remove('empty');
-    outputBody.innerHTML = '<span style="font-family:var(--mono); font-size:13px; color:var(--ink-dim);">Sending to Groq…</span>';
-
-    try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + apiKey
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          temperature: 0,
-          response_format: { type: 'json_object' },
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a precise grammar and spelling checker. Given input text, return ONLY a JSON object, no markdown fences, with this exact shape: {"corrected": "<full corrected text>", "errors": [{"original": "<short original snippet>", "correction": "<short corrected snippet>", "explanation": "<brief explanation>"}]}. If the text is already correct, set "corrected" equal to the input and return an empty "errors" array. Preserve the original meaning, tone, and line breaks as much as possible; only fix grammar, spelling, punctuation, and word choice errors.'
-            },
-            { role: 'user', content: text }
-          ]
-        })
-      });
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        throw new Error('Groq API returned ' + res.status + (errText ? (': ' + errText.slice(0,200)) : ''));
-      }
-
-      const data = await res.json();
-      const raw = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-      if (!raw) throw new Error('No content returned from Groq.');
-
-      let cleaned = raw.trim().replace(/^```json\s*/i, '').replace(/^```\s*/,'').replace(/```\s*$/,'');
-      let parsed;
-      try {
-        parsed = JSON.parse(cleaned);
-      } catch (e) {
-        throw new Error('Could not parse the model response as JSON.');
-      }
-
-      const corrected = parsed.corrected || text;
-      const errors = Array.isArray(parsed.errors) ? parsed.errors : [];
-      lastCorrectedText = corrected;
-
-      let html = `<div class="corrected-text">${wordDiff(text, corrected)}</div>`;
-
-      if (errors.length) {
-        html += '<ul class="issue-list">';
-        errors.forEach((err) => {
-          html += `<li>
-            <span class="issue-mark">✎</span>
-            <span class="issue-body">
-              <del>${escapeHtml(err.original || '')}</del> → <ins>${escapeHtml(err.correction || '')}</ins>
-              <span class="issue-explain">${escapeHtml(err.explanation || '')}</span>
+      <!-- Voice Panel -->
+      <div class="card glass voice-card" id="voicePanel" role="tabpanel" aria-labelledby="modeVoiceBtn">
+        <div class="mic-stage">
+          <button id="micBtn" class="mic-btn" type="button" aria-pressed="false" aria-label="Start recording your voice">
+            <span class="mic-rings" aria-hidden="true">
+              <i></i><i></i><i></i>
             </span>
-          </li>`;
-        });
-        html += '</ul>';
-      } else {
-        html += '<p style="margin-top:16px; color:var(--teal); font-family:var(--mono); font-size:13px;">No issues found — clean copy.</p>';
-      }
+            <span class="mic-core">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke-linecap="round"/></svg>
+            </span>
+          </button>
+          <p class="mic-status" id="micStatus">Tap to start speaking</p>
+          <div class="mic-eq" id="micEq" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
 
-      outputBody.innerHTML = html;
-      copyBtn.disabled = false;
+        <div class="transcript-box">
+          <div class="transcript-head">
+            <span class="label-eyebrow">Live transcript</span>
+            <span class="pill pill-muted" id="langPill">EN</span>
+          </div>
+          <p id="liveTranscript" class="transcript-text" aria-live="polite">Your words will appear here as you speak…</p>
+        </div>
 
-    } catch (err) {
-      outputBody.innerHTML = 'Run a grammar check to see the cleaned-up version and a list of fixes here.';
-      outputBody.classList.add('empty');
-      showError(err.message || 'Something went wrong while contacting Groq.');
-    } finally {
-      checkBtn.disabled = false;
-      checkBtn.textContent = 'Check grammar with Groq';
-    }
-  });
+        <div class="btn-row">
+          <button id="checkVoiceBtn" class="btn btn-primary" type="button" disabled>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Check Grammar
+          </button>
+          <button id="clearVoiceBtn" class="btn btn-ghost" type="button">Clear</button>
+        </div>
+      </div>
 
-  copyBtn.addEventListener('click', async () => {
-    if (!lastCorrectedText) return;
-    try {
-      await navigator.clipboard.writeText(lastCorrectedText);
-      copyBtn.textContent = 'copied';
-      setTimeout(() => { copyBtn.textContent = 'copy'; }, 1500);
-    } catch (e) {
-      showError('Could not copy to clipboard.');
-    }
-  });
-})();
-</script>
+      <!-- Text Panel -->
+      <div class="card glass text-card is-hidden" id="textPanel" role="tabpanel" aria-labelledby="modeTextBtn" hidden>
+        <label class="label-eyebrow" for="manualInput">Type or paste your text</label>
+        <textarea id="manualInput" class="manual-textarea" placeholder="e.g. me and him goes to the market yesterday for buy some fruits" aria-label="Text to grammar check"></textarea>
+        <div class="btn-row">
+          <button id="checkTextBtn" class="btn btn-primary" type="button">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Check Grammar
+          </button>
+          <button id="clearTextBtn" class="btn btn-ghost" type="button">Clear</button>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div class="card glass stats-card">
+        <span class="label-eyebrow">Statistics</span>
+        <div class="stats-grid">
+          <div class="stat"><span class="stat-value" id="statWords">0</span><span class="stat-label">Words</span></div>
+          <div class="stat"><span class="stat-value" id="statChars">0</span><span class="stat-label">Characters</span></div>
+          <div class="stat"><span class="stat-value" id="statReadTime">0s</span><span class="stat-label">Reading time</span></div>
+          <div class="stat"><span class="stat-value" id="statSpeakTime">0s</span><span class="stat-label">Speaking time</span></div>
+          <div class="stat"><span class="stat-value" id="statCorrections">0</span><span class="stat-label">Corrections made</span></div>
+          <div class="stat"><span class="stat-value" id="statTotalChecks">0</span><span class="stat-label">Total checks</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RIGHT COLUMN: RESULT ============ -->
+    <section class="col col-result">
+
+      <div class="card glass result-card" id="resultCard">
+
+        <!-- Empty state -->
+        <div class="empty-state" id="resultEmpty">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 16.5h5" stroke-linecap="round"/></svg>
+          <p>Your corrected text will appear here — speak or type, then hit “Check Grammar.”</p>
+        </div>
+
+        <!-- Loading state -->
+        <div class="loading-state is-hidden" id="resultLoading" hidden>
+          <div class="pulse-orb" aria-hidden="true"></div>
+          <p class="typing-line"><span id="typingText">Reading your sentence</span><span class="typing-dots"><i></i><i></i><i></i></span></p>
+        </div>
+
+        <!-- Result content -->
+        <div class="result-content is-hidden" id="resultContent" hidden>
+
+          <div class="result-block">
+            <div class="result-block-head">
+              <span class="label-eyebrow">Original</span>
+            </div>
+            <p class="result-text original-text" id="originalOut"></p>
+          </div>
+
+          <div class="result-block result-block-corrected">
+            <div class="result-block-head">
+              <span class="label-eyebrow">Corrected <span class="pill pill-good" id="correctionCountPill">0 fixes</span></span>
+            </div>
+            <p class="result-text corrected-text" id="correctedOut"></p>
+          </div>
+
+          <!-- Speech playback controls -->
+          <div class="playback-panel">
+            <div class="playback-buttons">
+              <button id="playBtn" class="btn btn-primary btn-round" type="button" aria-label="Play corrected text">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>
+              </button>
+              <button id="pauseBtn" class="btn btn-ghost btn-round" type="button" aria-label="Pause speech" disabled>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              </button>
+              <button id="resumeBtn" class="btn btn-ghost btn-round" type="button" aria-label="Resume speech" disabled>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>
+              </button>
+              <button id="stopBtn" class="btn btn-ghost btn-round" type="button" aria-label="Stop speech" disabled>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+              </button>
+              <span class="speak-status" id="speakStatus">Idle</span>
+            </div>
+
+            <div class="voice-settings">
+              <div class="field">
+                <label for="voiceSelect">Voice</label>
+                <select id="voiceSelect" aria-label="Choose a voice"></select>
+              </div>
+              <div class="field">
+                <label for="rateSlider">Rate <output id="rateOut">1</output></label>
+                <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1">
+              </div>
+              <div class="field">
+                <label for="pitchSlider">Pitch <output id="pitchOut">1</output></label>
+                <input type="range" id="pitchSlider" min="0" max="2" step="0.1" value="1">
+              </div>
+              <div class="field">
+                <label for="volumeSlider">Volume <output id="volumeOut">1</output></label>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
+              </div>
+            </div>
+          </div>
+
+          <!-- Export row -->
+          <div class="btn-row export-row">
+            <button id="copyBtn" class="btn btn-ghost" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+            <button id="downloadTxtBtn" class="btn btn-ghost" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19.5h16" stroke-linecap="round"/></svg>
+              .TXT
+            </button>
+            <button id="downloadPdfBtn" class="btn btn-ghost" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19.5h16" stroke-linecap="round"/></svg>
+              .PDF
+            </button>
+            <button id="shareBtn" class="btn btn-ghost" type="button" hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.6 7.6-4.2M8.2 13.4l7.6 4.2"/></svg>
+              Share
+            </button>
+          </div>
+        </div>
+
+        <!-- Error state -->
+        <div class="error-state is-hidden" id="resultError" hidden role="alert">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          <p id="resultErrorText">Something went wrong.</p>
+          <button id="resultErrorRetry" class="btn btn-primary" type="button">Try again</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ HISTORY PANEL ============ -->
+  <aside class="history-panel" id="historyPanel" aria-label="Grammar check history" aria-hidden="true">
+    <div class="history-panel-head">
+      <h2>History</h2>
+      <div class="history-head-actions">
+        <button id="clearHistoryBtn" class="btn btn-ghost btn-sm" type="button">Clear all</button>
+        <button id="closeHistoryBtn" class="icon-btn" type="button" aria-label="Close history panel">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="history-list" id="historyList">
+      <p class="history-empty" id="historyEmpty">No checks yet. Your history will show up here.</p>
+    </div>
+  </aside>
+  <div class="scrim" id="historyScrim" hidden></div>
+
+</main>
+
+<!-- ===================== SETTINGS MODAL ===================== -->
+<div class="modal-scrim" id="settingsScrim" hidden></div>
+<div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+  <div class="modal-head">
+    <h2 id="settingsTitle">AI Settings</h2>
+    <button id="closeSettingsBtn" class="icon-btn" type="button" aria-label="Close settings">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <p class="modal-hint">Voxa calls the Groq API directly from your browser. Your key is stored only in this browser's <code>localStorage</code> — it is never sent anywhere except <code>api.groq.com</code>.</p>
+
+    <div class="field">
+      <label for="apiKeyInput">Groq API Key</label>
+      <div class="key-input-row">
+        <input type="password" id="apiKeyInput" placeholder="gsk_••••••••••••••••••••••••" autocomplete="off" spellcheck="false">
+        <button id="toggleKeyVisibility" type="button" class="icon-btn" aria-label="Show API key">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7-10.5-7-10.5-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="connection-status" id="connectionStatus">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Not connected</span>
+    </div>
+
+    <div class="btn-row">
+      <button id="saveKeyBtn" class="btn btn-primary" type="button">Save key</button>
+      <button id="testKeyBtn" class="btn btn-ghost" type="button">Test connection</button>
+      <button id="removeKeyBtn" class="btn btn-danger" type="button">Remove key</button>
+    </div>
+
+    <hr class="modal-divider">
+
+    <div class="field">
+      <label for="modelDisplay">Model</label>
+      <input type="text" id="modelDisplay" value="llama-3.3-70b-versatile" disabled>
+    </div>
+
+    <p class="modal-hint">
+      Need a key? Create one for free at
+      <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">console.groq.com/keys</a>.
+    </p>
+  </div>
+</div>
+
+<script src="script.js" defer></script>
 </body>
 </html>
