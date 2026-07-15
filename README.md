@@ -1,204 +1,208 @@
-You are an expert Full Stack Web Developer, UI/UX Designer, and AI Integration Engineer.
+# 🎙️ VerbaGreen – AI Voice Grammar Checker
 
-Create a fully responsive Voice Grammar Checker web application using only HTML, CSS, and Vanilla JavaScript (no React, Node.js, Express, PHP, or any backend). The application must use the Groq API to check grammar and generate corrected text.
+An AI-powered **Voice Grammar Checker** that allows users to speak naturally, automatically corrects grammar using the **Groq AI API**, and reads the corrected sentence back using **Text-to-Speech**.
 
-Objective
 
-The website should allow users to:
+---
 
-Speak into their microphone.
-Convert speech into text using the browser's Speech Recognition API.
-Send the transcribed text to the Groq AI API.
-Receive grammatically corrected text.
-Display the corrected sentence.
-Convert the corrected sentence back into natural speech using the browser's Speech Synthesis API.
-Allow users to listen to the corrected sentence.
-Tech Stack
-HTML5
-CSS3
-Vanilla JavaScript (ES6)
-Web Speech API
-SpeechRecognition
-SpeechSynthesis
-Fetch API
-Groq API
+# 🌟 Features
 
-No frameworks.
+## 🎤 Voice Recognition
 
-UI Requirements
+* One-click microphone recording
+* Real-time speech-to-text conversion
+* Live transcript display
+* Start and stop recording
+* Graceful microphone permission handling
+* Browser Speech Recognition API integration
 
-Create a modern AI interface with:
+---
 
-Glassmorphism design
-Animated gradient background
-Responsive layout
-Rounded cards
-Beautiful typography
-Dark/Light mode toggle
-Smooth hover animations
-Mobile friendly
-Loading animations
-Success animations
-Error messages
-Microphone animation while recording
-AI typing effect while waiting
-Features
-1. Voice Recognition
-Large microphone button
-Start Recording
-Stop Recording
-Live transcript
-Real-time speech recognition
-Auto punctuation when possible
-Handle recognition errors gracefully
-2. Grammar Checking
+## 🤖 AI Grammar Correction
 
-Send the transcript to the Groq API.
+Powered by **Groq AI** using:
 
-Use a prompt similar to:
+```text
+Model: llama-3.3-70b-versatile
+```
 
-"Correct the grammar, punctuation, capitalization, spelling, and sentence structure of the following text. Keep the meaning exactly the same. Return only the corrected sentence."
+The AI automatically corrects:
 
-Display:
+* Grammar
+* Punctuation
+* Capitalization
+* Spelling mistakes
+* Sentence structure
 
-Original Text
+while preserving the original meaning of the text.
 
-Corrected Text
+---
 
-Highlight changes elegantly.
+## 🔊 Text-to-Speech
 
-3. Text-to-Speech
+After grammar correction, VerbaGreen can speak the corrected sentence aloud.
 
-After AI returns the corrected sentence:
+### Controls
 
-Automatically speak it.
+* ▶️ Play
+* ⏸️ Pause
+* 🔄 Resume
+* ⏹️ Stop
 
-Also include:
+### Customization
 
-Play button
-Pause
-Resume
-Stop
-Voice selector
-Speech rate slider
-Pitch slider
-Volume slider
-4. Manual Mode
+* Voice selector
+* Volume control
+* Speech rate adjustment
+* Pitch adjustment
 
-Allow users to type text manually.
+---
 
-Buttons:
+## ✍️ Manual Input Mode
 
-Check Grammar
-Speak Corrected Text
-Clear
-5. AI Settings
+Users can also:
 
-Create a Settings modal containing:
+* Type text manually
+* Correct grammar without using the microphone
+* Speak the corrected text
+* Clear text instantly
 
-Groq API Key input
-Show/Hide API Key
-Save in localStorage
-Remove API Key
-API Connection Status
-Test API button
+---
 
-Never hardcode the API key.
+## 📊 Live Statistics
 
-6. History
+For both original and corrected text, VerbaGreen displays:
 
-Save previous grammar checks locally.
+* Character count
+* Word count
+* Reading time
+* Speaking time
 
-Each history item should contain:
+---
 
-Date
-Original text
-Corrected text
-Replay button
-Copy button
-Delete button
-7. Copy & Download
+## 📜 Session History
 
-Allow users to:
+Every grammar check is stored locally in the browser.
 
-Copy corrected text
-Download as TXT
-Download as PDF
-Share using Web Share API (if supported)
-8. Statistics
+Each history item includes:
 
-Show:
+* Date and time
+* Original text
+* Corrected text
+* Replay functionality
+* Copy button
+* Delete option
 
-Words
-Characters
-Reading time
-Speaking time
-Number of corrections
-9. Accessibility
-Keyboard navigation
-ARIA labels
-High contrast support
-Screen reader compatibility
-Large touch targets
-Error Handling
+---
 
-Handle:
+## 📥 Export & Sharing
 
-Empty input
-No microphone permission
-Unsupported browser
-Invalid API key
-Rate limit
-Network failure
-AI timeout
-Speech synthesis errors
+Users can:
 
-Display friendly messages.
+* Copy corrected text
+* Download as TXT
+* Download as PDF
+* Share using the Web Share API (supported browsers)
 
-Folder Structure
-VoiceGrammarChecker/
-│
-├── index.html
-├── style.css
-├── script.js
-├── assets/
-│   ├── icons/
-│   └── sounds/
-├── README.md
-Code Requirements
-Well-commented code
-Modular JavaScript
-Async/Await
-Clean architecture
-No inline CSS
-No inline JavaScript
-Use Fetch API for Groq requests
-Store settings using localStorage
-Responsive for desktop, tablet, and mobile
-Groq API
+---
 
-Use:
+## ⚙️ Engine Settings
 
-Model:
+The Settings panel includes:
 
-llama-3.3-70b-versatile
+* Groq API Key configuration
+* Show/Hide API Key
+* Save API key locally
+* Delete API key
+* API connection testing
+* API status indicator
 
-Endpoint:
+**No API key is hardcoded.**
 
-https://api.groq.com/openai/v1/chat/completions
+---
 
-Use the standard OpenAI-compatible request format.
+# 🎨 User Interface
 
-Final Output
+VerbaGreen features a modern and responsive design with:
 
-Generate a complete, production-ready project with:
+* Glassmorphism UI
+* Animated backgrounds
+* Smooth transitions
+* Mobile-first design
+* Dark and Light themes
+* AI processing animations
+* Microphone recording animations
+* Beautiful typography
 
-Professional UI
-Fully working HTML, CSS, and JavaScript
-No placeholder functions
-No missing logic
-No syntax errors
-Proper comments
-Responsive design
-Fully integrated Speech-to-Text, Groq AI grammar correction, and Text-to-Speech
-Ready to run by simply opening index.html (after entering a valid Groq API key).
+---
+
+# 🛠️ Tech Stack
+
+| Technology           | Usage                 |
+| -------------------- | --------------------- |
+| HTML5                | Structure             |
+| CSS3                 | Styling               |
+| Vanilla JavaScript   | Application Logic     |
+| Web Speech API       | Speech Recognition    |
+| Speech Synthesis API | Text-to-Speech        |
+| Fetch API            | API Communication     |
+| Groq API             | AI Grammar Correction |
+| Local Storage        | Settings & History    |
+
+---
+
+# 🚀 Getting Started
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/your-username/VerbaGreen.git
+```
+
+---
+
+# ⚠️ Error Handling
+
+VerbaGreen gracefully handles:
+
+* Empty input
+* Microphone permission denied
+* Unsupported browsers
+* Invalid API key
+* Network failures
+* API rate limits
+* Speech recognition errors
+* Speech synthesis failures
+* AI timeout issues
+
+---
+
+# 🔒 Privacy & Security
+
+* No backend server is used.
+* API keys remain in the user's browser.
+* Voice recordings are never stored.
+* Session history remains completely local.
+* No user data is sent anywhere except to the Groq API for grammar correction.
+
+---
+
+# 📱 Responsive Design
+
+Optimized for:
+
+* 💻 Desktop
+* 📱 Mobile
+* 📟 Tablet
+
+---
+
+# 🔮 Future Enhancements
+
+* Multi-language support
+* Grammar explanation mode
+* Export history to CSV
+* Progressive Web App (PWA)
+* Cloud synchronization
+* Offline grammar correction
+* Speech translation support
